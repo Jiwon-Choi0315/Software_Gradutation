@@ -8,8 +8,11 @@
 - split하지 않아도 되는 vector라면 (즉, 하나 vectorstore에서 전체 vectorstore를 가져오는 경우) vectorstore로 저장하지 않음. 바로 md를 가져옴. 즉, 로드 및 비교하는 불필요한 과정이 없어짐.
 - 한번에 vectorstore를 로드하지 않고 질문이 카테고리에 처음 들어갔을 때 해당 카테고리와 관련된 vectorstore들만 로드함.  
 
+
 ## 코드 설명
 - **create_md_files.py**
+
+
 'upload'폴더에 있는 md 파일을 읽어 카테고리 별로 (필요하다면 해당 md 파일을 수정하여) 분류한다.  
 
 
@@ -23,10 +26,14 @@
 
 
 - **save_vectorstore.py**
+
+
 **create_md_files.py**에서 카테고리별 분류한 md파일들을 vectorstore로 저장함. 
 
 
 - **kw_chat_bot.py**
+
+
 챗봇
 
 
@@ -45,11 +52,14 @@
 1. 학점
 - **표 이해 gpt** -> **학점 gpt** -> 학점관련 답변
 
+
 2. 교양
 - **표 이해 gpt** -> **교양 gpt** -> 교양 (필수,균형) 관련 답변
 
+
 3. 전공
 - 아직 안함
+
 
 4. 공학인증
 - 진행 중
