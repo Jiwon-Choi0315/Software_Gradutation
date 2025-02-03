@@ -10,6 +10,8 @@
 
 
 ## 코드 설명
+- **실행 순서:** upload 폴더생성 -> 폴더 안에 필요한 md파일 올리기 -> create_md_files.py -> save_vectorstore.py -> kw_chat_bot.py 
+
 - **create_md_files.py**
 
 
@@ -34,7 +36,7 @@
 - **kw_chat_bot.py**
 
 
-챗봇
+개인정보를 긁어오는데 아이디 비번 입력해야함, 챗봇
 
 
 ## 구조
