@@ -3,6 +3,11 @@
 
 ## 구조
 
-질문 --> 카테고리 gpt 
-     --> gkdl
+질문  '&rightarrow;' 졸업 '&rightarrow;'
 
+      '&rightarrow;' 음식
+
+      '&rightarrow;' 강의
+     
+      '&rightarrow;' 학사정보
+     
