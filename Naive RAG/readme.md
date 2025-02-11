@@ -12,13 +12,12 @@
 - **학사정보:** 글로벌인재트랙인증제 충족 여부 등
 
 
+## 구조
+
+
 ## 간단한 코드 설명
 - **vectorstore를 저장하기 위해:** 'upload' 폴더생성하여 필요한 md파일 올리기 -> create_md_files.py 실행 -> save_vectorstore.py 실행
 - **광운대 챗봇:** kw_chat_bot.py 실행 (단, vectorstore가 존재해야함) 
-
-
-## 구조
-
 
 
 ### **create_md_files.py**
