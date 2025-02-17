@@ -1,16 +1,22 @@
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from bs4 import BeautifulSoup
-import time
-import requests
-from selenium.common.exceptions import StaleElementReferenceException
+# from selenium import webdriver
+# from selenium.webdriver.common.keys import Keys
+# from selenium.webdriver.common.by import By
+# from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.webdriver.support import expected_conditions as EC
+# from bs4 import BeautifulSoup
+# import time
+# import requests
+# from selenium.common.exceptions import StaleElementReferenceException
+# import re
+# from selenium.webdriver.chrome.options import Options
+# import os
+# from selenium.common.exceptions import TimeoutException
+
 import re
-from selenium.webdriver.chrome.options import Options
 import os
-from selenium.common.exceptions import TimeoutException
+
+
+current_dir = os.path.dirname(os.path.abspath(__file__)) + "\\"
 
 
 class UnionFind:
@@ -44,8 +50,9 @@ def update_dictionary(dictionary, synonym_mapping):
 
 
 def make_folders():
-    # upload 폴더
-    upload_path = "upload"
+    # 현재 파일이 있는 폴더 경로
+    upload_path = current_dir + "upload"
+
     if not os.path.exists(upload_path):
         os.makedirs(upload_path)
 
@@ -65,8 +72,9 @@ def make_folders():
 
 def modify_md():
     # upload 된 파일들
-    raw_mds = [f for f in os.listdir('upload') if
-               f.endswith('.md') and os.path.isfile(os.path.join('upload', f))]
+    raw_mds = [f for f in os.listdir(current_dir + 'upload') if
+               f.endswith('.md') and os.path.isfile(os.path.join(current_dir + 'upload', f))]
+    print(len(raw_mds))
 
     curriculum_summary = dict() # 2025_1 학기 균형 영역
     synonym_mapping = dict()    # 동의어 이름이 속한 동의어 집합을 매핑하는 사전 생성
@@ -74,7 +82,8 @@ def modify_md():
 
 
     for md in raw_mds:
-        file_path = os.path.join('upload', md)
+        file_path = current_dir + "upload\\"
+        file_path += md       #
         if md == '2025_1_grad_requirement_p19_29.md':
             out_split_1 = []
             out_split_2 = []
@@ -107,9 +116,9 @@ def modify_md():
             # 결과를 파일로 저장
             name_1 = '2025_1_grad_requirement_p19_29_credits.md'
             name_2 = '2025_1_grad_requirement_p19_29_liberal_arts.md'
-            with open('upload/Graduation/Credits/' + name_1 , "w", encoding="utf-8") as file1:
+            with open(current_dir + 'upload/Graduation/Credits/' + name_1 , "w", encoding="utf-8") as file1:
                 file1.writelines(out_split_1)
-            with open('upload/Graduation/LiberalArts/' + name_2, "w", encoding="utf-8") as file2:
+            with open(current_dir + 'upload/Graduation/LiberalArts/' + name_2, "w", encoding="utf-8") as file2:
                 file2.writelines(out_split_2)
 
         if md == '2025_1_grad_curriculum_p101_103.md':
@@ -329,7 +338,8 @@ def modify_md():
 
 
 
-def save_to_md(filename, data_type, data):
+def save_to_md(filenames, data_type, data):
+    filename = current_dir + filenames
 
     # Ensure the directory exists
     os.makedirs(os.path.dirname(filename), exist_ok=True)

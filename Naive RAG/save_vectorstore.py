@@ -3,9 +3,15 @@ from langchain_community.document_loaders import TextLoader
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores.utils import DistanceStrategy
+from langchain.schema import Document
 
 import re
 import os
+import joblib
+
+import warnings
+warnings.simplefilter("ignore", FutureWarning)
+
 
 # 하나만 빠르게 save하고 싶을 때
 def test_file():
@@ -174,12 +180,19 @@ def embedding_save_files(docs):
         model_kwargs={'device': 'cpu'},
         encode_kwargs={'normalize_embeddings': True},
     )
+
     # 각 md 파일 마다 vectorstore 만들기
     for key, value in docs.items():
-        # FAISS 벡터 저장소 저장하기
+        #주소만 추출
         address = f'db\\{key[7:-3]}'
+
+        # FAISS 벡터 저장소 저장하기
         vectorstore = FAISS.from_documents(value, embedding=embeddings_model, distance_strategy=DistanceStrategy.COSINE)
         vectorstore.save_local(address)
+
+        # Keyword RAG를 위해 re로 한글, 숫자만 남겨놓고 저장
+        clean_documents = Document(page_content = re.sub(r'[^\w\s]', ' ', str(value)))
+        joblib.dump(clean_documents, address + "\\keyword.joblib")
 
 
 if __name__ == '__main__':
