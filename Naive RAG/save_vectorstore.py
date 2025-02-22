@@ -194,13 +194,10 @@ def embedding_save_files(docs):
         vectorstore.save_local(address)
 
         # Keyword RAG를 위해 re로 한글, 숫자만 남겨놓고 저장
-
         clean_documents = value
         for i in clean_documents:
             i.page_content = re.sub(r'[^\w\s]', ' ', i.page_content)
 
-        print(clean_documents)
-        # clean_documents = Document(page_content = re.sub(r'[^\w\s]', ' ', str(value)))
         joblib.dump(clean_documents, address + "\\keyword.joblib")
 
 

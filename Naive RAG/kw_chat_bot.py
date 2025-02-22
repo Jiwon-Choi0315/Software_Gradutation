@@ -13,9 +13,16 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain.prompts import ChatPromptTemplate
-import crawling
+# import crawling
 from langchain_teddynote import logging
 import ast
+import joblib
+import warnings
+
+warnings.simplefilter("ignore", FutureWarning)
+load_dotenv()
+
+current_dir = os.path.dirname(os.path.abspath(__file__)) + "\\"
 
 '''
 1번 행 찾기를 내가 하자.
@@ -38,6 +45,12 @@ class VectorStoreManager:
             "Food": [],
             "Academic Info": []
         }
+        self._docs = {
+            "Graduation": [],
+            "Course": [],
+            "Food": [],
+            "Academic Info": []
+        }
         self._embeddings_model = HuggingFaceEmbeddings(  # 768 차원
             model_name='jhgan/ko-sroberta-nli',
             model_kwargs={'device': 'cpu'},
@@ -48,10 +61,11 @@ class VectorStoreManager:
         if not self._vectorstores[category]:
             print(f"{category} Vectorstore 로드중")
             try:
-                category_path = os.path.join('./db', category)
+                category_path = os.path.join(current_dir + 'db', category)
                 for topic_folder in os.listdir(category_path):
                     topic_folder_path = os.path.join(category_path, topic_folder)
                     topic_vectorstore = []
+                    topic_docs = []
 
                     for detail_folder in os.listdir(topic_folder_path):
                         detail_folder_path = os.path.join(topic_folder_path, detail_folder)
@@ -62,9 +76,13 @@ class VectorStoreManager:
                             distance_strategy=DistanceStrategy.COSINE,
                             allow_dangerous_deserialization=True
                         )
+                        doc = joblib.load(detail_folder_path + "\\keyword.joblib")
+
                         topic_vectorstore.append(vectorstore)
+                        topic_docs.append(doc)
 
                     self._vectorstores[category].append(topic_vectorstore)
+                    self._docs[category].append(topic_docs)
 
                 print(f"{category} 모든 Vectorstore 로드 완료")
 
@@ -364,15 +382,15 @@ if __name__ == '__main__':
     llm_manager.set_llm_type('category')
     chain = llm_manager.get_chain()
     response = chain.invoke({'question': query})
-    print("gpt가 선택한 카테고리: ----------------------------------")
-    print(response)
+    # print("gpt가 선택한 카테고리: ----------------------------------")
+    # print(response)
 
     #response = 'Graduation'
 
     # 해당 category vs 질문  -----------------------------------------------------------------
     match response:
         case 'Graduation':
-            print("졸업 카테고리----------------------------")
+            # print("졸업 카테고리----------------------------")
 
             grad_vecs = vec_manager.get_vectorstores("Graduation")  # 졸업 처음 방문할 때, 졸업 vectorstore 로드 및 학생 전공 타입 물어봄,
             # 참고: grad_vecs = [[학점], [교양], [전공], [공학]]      (현재: [[학점],[교양],[공학] )
@@ -387,7 +405,7 @@ if __name__ == '__main__':
                     chosen_doc = retriever.invoke(stu_info["입학 년도"])  # 사용자 신입학 연도 가져오기    2020
                     # chosen_doc = retriever.invoke('2025년도 신입학자')  # 2025
 
-                    print("chosen doc: ", chosen_doc)
+                    # print("chosen doc: ", chosen_doc)
                     chosen_text = format_docs(chosen_doc)
 
                     llm_manager.set_llm_type('grad_credits_table')  # 학점 표 이해 gpt
@@ -401,8 +419,8 @@ if __name__ == '__main__':
 
                         'credits_table': chosen_text})
 
-                    print("\n표 gpt가 추출한 행: -------------------------------------------------------------------")
-                    print(table_dict)
+                    # print("\n표 gpt가 추출한 행: -------------------------------------------------------------------")
+                    # print(table_dict)
 
                     llm_manager.set_llm_type('grad_credits')  # 학점 gpt
                     chain = llm_manager.get_chain()
@@ -422,7 +440,7 @@ if __name__ == '__main__':
                 # 2. 교양 gpt
                 elif idx == 2:
                     # 교양 균형 영역
-                    md_manager.set_path('upload/Graduation/LiberalArts/curriculum_summary.md')
+                    md_manager.set_path(current_dir + 'upload\\Graduation\\LiberalArts\\curriculum_summary.md')
                     curriculum_summary= md_manager.get_dictionary()
 
                     excluded_subj = {'체육실기', '음악실기', '미술실기'}
@@ -440,9 +458,9 @@ if __name__ == '__main__':
                         }
                     }
 
-                    print("겹치는 영역: -----")
-                    for key, value in intersection_summary.items():
-                        print(key, value)
+                    # print("겹치는 영역: -----")
+                    # for key, value in intersection_summary.items():
+                    #     print(key, value)
 
                     retriever = vecs[0].as_retriever(
                         search_type='mmr',
@@ -451,14 +469,14 @@ if __name__ == '__main__':
                     chosen_doc = retriever.invoke(stu_info["입학 년도"])  # 사용자 신입학 연도 가져오기
                     #chosen_doc = retriever.invoke('2025')  # 사용자 신입학 연도 가져오기
 
-                    print("chosen doc: ", chosen_doc)
+                    # print("chosen doc: ", chosen_doc)
                     chosen_text = format_docs(chosen_doc)
 
                     llm_manager.set_llm_type('grad_liberalArts_table')  # 교양이수체계 표 이해 gpt-----------------------
                     chain = llm_manager.get_chain()
                     table_dict = chain.invoke({'liberalArts_table': chosen_text})
-                    print("\n표 gpt가 추출한 행: -------------------------------------------------------------------")
-                    print(table_dict)
+                    # print("\n표 gpt가 추출한 행: -------------------------------------------------------------------")
+                    # print(table_dict)
 
                     llm_manager.set_llm_type('grad_liberalArts')  # 교양 gpt
                     chain = llm_manager.get_chain()
@@ -487,7 +505,7 @@ if __name__ == '__main__':
                         chosen_doc = retriever.invoke(f'# {stu_info["학부/학과"]}_{stu_info["입학 년도"][:4]}')
                         #chosen_doc = retriever.invoke(f'# 로봇학부_2018')
 
-                        print("chosen doc: ", chosen_doc)
+                        # print("chosen doc: ", chosen_doc)
                         chosen_text = format_docs(chosen_doc)
 
 
@@ -496,8 +514,8 @@ if __name__ == '__main__':
                         table_info = chain.invoke({
                             'msi_table': chosen_text})
 
-                        print("\n표 gpt가 추출한 행: -------------------------------------------------------------------")
-                        print(table_info)
+                        # print("\n표 gpt가 추출한 행: -------------------------------------------------------------------")
+                        # print(table_info)
 
                         llm_manager.set_llm_type('grad_engineer_msi')  # 표 이해 gpt
                         chain = llm_manager.get_chain()
@@ -514,7 +532,7 @@ if __name__ == '__main__':
                             search_kwargs={'k': 1, 'lambda_mult': 0.5}
                         )
                         chosen_doc = retriever.invoke(stu_info["입학 년도"])
-                        print("chosen doc: ", chosen_doc)
+                        # print("chosen doc: ", chosen_doc)
                         chosen_text = format_docs(chosen_doc)
 
                         llm_manager.set_llm_type('grad_engineer_subj_table')  # 표 이해 gpt
@@ -524,8 +542,8 @@ if __name__ == '__main__':
                             #'major': '공과대학 환경공학과',
                             'engineer_table': chosen_text})
 
-                        print("\n표 gpt가 추출한 행: -------------------------------------------------------------------")
-                        print(table_info)
+                        # print("\n표 gpt가 추출한 행: -------------------------------------------------------------------")
+                        # print(table_info)
 
                         llm_manager.set_llm_type('grad_engineer_subj')  # 공학 필수 과목 gpt
                         chain = llm_manager.get_chain()
