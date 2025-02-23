@@ -13,6 +13,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain.prompts import ChatPromptTemplate
+from langchain.retrievers import BM25Retriever, EnsembleRetriever
 # import crawling
 from langchain_teddynote import logging
 import ast
@@ -20,7 +21,6 @@ import joblib
 import warnings
 
 warnings.simplefilter("ignore", FutureWarning)
-load_dotenv()
 
 current_dir = os.path.dirname(os.path.abspath(__file__)) + "\\"
 
@@ -100,7 +100,7 @@ class VectorStoreManager:
         else:
             print(f"{category} Vectorstore 이미 로드됨.")
 
-        return self._vectorstores[category]
+        return self._vectorstores[category], self._docs[category]
 
 class LlmManager:
     def __init__(self):
@@ -358,7 +358,7 @@ class MdManager:
 if __name__ == '__main__':
     # 기본 세팅
     #os.environ["USER_AGENT"] = os.getenv("USER_AGENT", "MyPythonApp")       # 이부분 이상함
-    dotenv_path = r"C:\Users\user\PycharmProjects\pythonProject\env.env"
+    dotenv_path = current_dir + r"\\.env"
     if load_dotenv(dotenv_path):
         print("env 파일이 성공적으로 로드되었습니다.")
     logging.langsmith("Graduation Project")  # LangSmith 추적 설정
@@ -392,7 +392,7 @@ if __name__ == '__main__':
         case 'Graduation':
             # print("졸업 카테고리----------------------------")
 
-            grad_vecs = vec_manager.get_vectorstores("Graduation")  # 졸업 처음 방문할 때, 졸업 vectorstore 로드 및 학생 전공 타입 물어봄,
+            grad_vecs, grad_docs = vec_manager.get_vectorstores("Graduation")  # 졸업 처음 방문할 때, 졸업 vectorstore 로드 및 학생 전공 타입 물어봄,
             # 참고: grad_vecs = [[학점], [교양], [전공], [공학]]      (현재: [[학점],[교양],[공학] )
 
             for idx, vecs in enumerate(grad_vecs, start = 1):
@@ -400,10 +400,18 @@ if __name__ == '__main__':
                 if idx == 1:
                     retriever = vecs[0].as_retriever(
                         search_type='mmr',
-                        search_kwargs={'k': 1, 'lambda_mult': 0.5}  # 하나만
+                        search_kwargs={'k': 3, 'lambda_mult': 0.5}  # 하나만
                     )
-                    chosen_doc = retriever.invoke(stu_info["입학 년도"])  # 사용자 신입학 연도 가져오기    2020
-                    # chosen_doc = retriever.invoke('2025년도 신입학자')  # 2025
+
+                    Kretriever = BM25Retriever.from_documents(grad_docs[idx-1][0])
+                    Kretriever.k = 3
+
+                    Eretriever = EnsembleRetriever(
+                        retrievers = [retriever, Kretriever],
+                        weights = [0.6, 0.4]
+                    )
+
+                    chosen_doc = Eretriever.invoke(stu_info["입학 년도"])  # 사용자 신입학 연도 가져오기    2020
 
                     # print("chosen doc: ", chosen_doc)
                     chosen_text = format_docs(chosen_doc)
@@ -464,10 +472,19 @@ if __name__ == '__main__':
 
                     retriever = vecs[0].as_retriever(
                         search_type='mmr',
-                        search_kwargs={'k': 1, 'lambda_mult': 0.5}  # 하나만
+                        search_kwargs={'k': 3, 'lambda_mult': 0.5}  # 하나만
                     )
-                    chosen_doc = retriever.invoke(stu_info["입학 년도"])  # 사용자 신입학 연도 가져오기
-                    #chosen_doc = retriever.invoke('2025')  # 사용자 신입학 연도 가져오기
+
+                    Kretriever = BM25Retriever.from_documents(grad_docs[idx-1][0])
+                    Kretriever.k = 3
+
+                    Eretriever = EnsembleRetriever(
+                        retrievers = [retriever, Kretriever],
+                        weights = [0.6, 0.4]
+                    )
+
+                    chosen_doc = Eretriever.invoke(stu_info["입학 년도"])  # 사용자 신입학 연도 가져오기
+
 
                     # print("chosen doc: ", chosen_doc)
                     chosen_text = format_docs(chosen_doc)
@@ -500,10 +517,18 @@ if __name__ == '__main__':
                         # 1. MSI 학점 확인
                         retriever = vecs[0].as_retriever(
                             search_type='mmr',
-                            search_kwargs={'k': 1, 'lambda_mult': 0.5}  # 하나만
+                            search_kwargs={'k': 3, 'lambda_mult': 0.5}  # 하나만
                         )
-                        chosen_doc = retriever.invoke(f'# {stu_info["학부/학과"]}_{stu_info["입학 년도"][:4]}')
-                        #chosen_doc = retriever.invoke(f'# 로봇학부_2018')
+
+                        Kretriever = BM25Retriever.from_documents(grad_docs[idx-1][0])
+                        Kretriever.k = 3
+
+                        Eretriever = EnsembleRetriever(
+                            retrievers = [retriever, Kretriever],
+                            weights = [0.6, 0.4]
+                        )
+
+                        chosen_doc = Eretriever.invoke(f'# {stu_info["학부/학과"]}_{stu_info["입학 년도"][:4]}')
 
                         # print("chosen doc: ", chosen_doc)
                         chosen_text = format_docs(chosen_doc)
@@ -529,9 +554,18 @@ if __name__ == '__main__':
                         # 2. 공학필수 과목
                         retriever = vecs[1].as_retriever(
                             search_type='mmr',
-                            search_kwargs={'k': 1, 'lambda_mult': 0.5}
+                            search_kwargs={'k': 3, 'lambda_mult': 0.5}
                         )
-                        chosen_doc = retriever.invoke(stu_info["입학 년도"])
+
+                        Kretriever = BM25Retriever.from_documents(grad_docs[idx-1][1])
+                        Kretriever.k = 3
+
+                        Eretriever = EnsembleRetriever(
+                            retrievers = [retriever, Kretriever],
+                            weights = [0.6, 0.4]
+                        )
+
+                        chosen_doc = Eretriever.invoke(stu_info["입학 년도"])
                         # print("chosen doc: ", chosen_doc)
                         chosen_text = format_docs(chosen_doc)
 
