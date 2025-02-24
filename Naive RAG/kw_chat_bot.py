@@ -29,7 +29,8 @@ current_dir = os.path.dirname(os.path.abspath(__file__)) + "\\"
 '''
 
 def format_docs(docs):
-    return '\n\n'.join([d.page_content for d in docs])
+    # return '\n\n'.join([d.page_content for d in docs])
+    return docs
 
 
 def get_personal_info(stu_id, stu_pw):
@@ -408,13 +409,13 @@ if __name__ == '__main__':
 
                     Eretriever = EnsembleRetriever(
                         retrievers = [retriever, Kretriever],
-                        weights = [0.6, 0.4]
+                        weights = [0.8, 0.2]
                     )
 
                     chosen_doc = Eretriever.invoke(stu_info["입학 년도"])  # 사용자 신입학 연도 가져오기    2020
 
-                    # print("chosen doc: ", chosen_doc)
-                    chosen_text = format_docs(chosen_doc)
+                    # print("chosen doc: ", chosen_doc[0]) # 여러개가 나옴
+                    chosen_text = format_docs(chosen_doc[0])
 
                     llm_manager.set_llm_type('grad_credits_table')  # 학점 표 이해 gpt
                     chain = llm_manager.get_chain()
@@ -480,14 +481,14 @@ if __name__ == '__main__':
 
                     Eretriever = EnsembleRetriever(
                         retrievers = [retriever, Kretriever],
-                        weights = [0.6, 0.4]
+                        weights = [0.8, 0.2]
                     )
 
                     chosen_doc = Eretriever.invoke(stu_info["입학 년도"])  # 사용자 신입학 연도 가져오기
 
 
                     # print("chosen doc: ", chosen_doc)
-                    chosen_text = format_docs(chosen_doc)
+                    chosen_text = format_docs(chosen_doc[0])
 
                     llm_manager.set_llm_type('grad_liberalArts_table')  # 교양이수체계 표 이해 gpt-----------------------
                     chain = llm_manager.get_chain()
@@ -525,13 +526,13 @@ if __name__ == '__main__':
 
                         Eretriever = EnsembleRetriever(
                             retrievers = [retriever, Kretriever],
-                            weights = [0.6, 0.4]
+                            weights = [0.8, 0.2]
                         )
 
                         chosen_doc = Eretriever.invoke(f'# {stu_info["학부/학과"]}_{stu_info["입학 년도"][:4]}')
 
                         # print("chosen doc: ", chosen_doc)
-                        chosen_text = format_docs(chosen_doc)
+                        chosen_text = format_docs(chosen_doc[0])
 
 
                         llm_manager.set_llm_type('grad_engineer_msi_table')  # 표 이해 gpt
@@ -562,12 +563,12 @@ if __name__ == '__main__':
 
                         Eretriever = EnsembleRetriever(
                             retrievers = [retriever, Kretriever],
-                            weights = [0.6, 0.4]
+                            weights = [0.8, 0.2]
                         )
 
                         chosen_doc = Eretriever.invoke(stu_info["입학 년도"])
                         # print("chosen doc: ", chosen_doc)
-                        chosen_text = format_docs(chosen_doc)
+                        chosen_text = format_docs(chosen_doc[0])
 
                         llm_manager.set_llm_type('grad_engineer_subj_table')  # 표 이해 gpt
                         chain = llm_manager.get_chain()
