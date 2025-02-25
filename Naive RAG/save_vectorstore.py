@@ -13,6 +13,9 @@ import warnings
 warnings.simplefilter("ignore", FutureWarning)
 
 
+current_dir = os.path.dirname(os.path.abspath(__file__)) + "\\"
+
+
 # 하나만 빠르게 save하고 싶을 때
 def test_file():
     split_configs = {
@@ -88,8 +91,8 @@ def test_file():
 def find_md_files():
 
     md_files = []
-    for root, dirs, files in os.walk('upload'):
-        if root == 'upload':  # 최상위 'upload' 폴더는 건너뜀
+    for root, dirs, files in os.walk(current_dir + 'upload'):
+        if root == current_dir + 'upload':  # 최상위 'upload' 폴더는 건너뜀
             continue
         for file_name in files:
             if file_name.endswith('.md'):
@@ -184,15 +187,18 @@ def embedding_save_files(docs):
     # 각 md 파일 마다 vectorstore 만들기
     for key, value in docs.items():
         #주소만 추출
-        address = f'db\\{key[7:-3]}'
+        address = current_dir + f'db\\{(key.replace(current_dir, ""))[7:-3]}'
 
         # FAISS 벡터 저장소 저장하기
         vectorstore = FAISS.from_documents(value, embedding=embeddings_model, distance_strategy=DistanceStrategy.COSINE)
         vectorstore.save_local(address)
 
         # Keyword RAG를 위해 re로 한글, 숫자만 남겨놓고 저장
-        clean_documents = Document(page_content = re.sub(r'[^\w\s]', ' ', str(value)))
-        joblib.dump(clean_documents, address + "\\keyword.joblib")
+        # clean_documents = value
+        # for i in clean_documents:
+        #     i.page_content = re.sub(r'[^\w\s]', ' ', i.page_content)
+
+        joblib.dump(value, address + "\\keyword.joblib")
 
 
 if __name__ == '__main__':
