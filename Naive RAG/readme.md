@@ -1,7 +1,8 @@
 ## Naive RAG 방식 
 - Dense Vector만 사용 (추후에 **Hybrid Rag** 로 바뀔 예정)
-- 현재 llm 모델은 chatgpt 4o (추후에 deepseek와 비교 예정)
-- 프론트와 백은 따로 진행중에 있음
+- 현재 llm 모델은 chatgpt 4o 
+- 프론트와 백은 따로 진행중에 있음 (멀티세션)
+- 사용자와의 대화기록들 **장기기억 가능** <- Hybrid RAG 로 기억들 가져올 예정 (현재, Simple RAG)
 
 
 ## 간단한 소개
